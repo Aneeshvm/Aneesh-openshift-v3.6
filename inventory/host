@@ -1,0 +1,65 @@
+# Create an OSEv3 group that contains the masters and nodes groups
+[OSEv3:children]
+masters
+nodes
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+# SSH user, this user should allow ssh based auth without requiring a password
+ansible_ssh_user=ansible
+
+# If ansible_ssh_user is not root, ansible_become must be set to true
+ansible_become=true
+debug_level=6
+openshift_master_cluster_hostname=master01.sun.com
+openshift_master_cluster_public_hostname=master01.sun.com
+openshift_disable_check=docker_image_availability,disk_availability,docker_storage,memory_availability
+
+enable_excluders=False 
+enable_docker_excluder=False 
+openshift_enable_service_catalog=False
+ansible_service_broker_install=False
+
+deployment_type=origin
+openshift_release=v3.6
+openshift_pkg_version=v3.6.0 
+openshift_image_tag=v3.6.0
+openshift_service_catalog_image_version=v3.6.0 
+template_service_broker_image_version=v3.6.0
+
+# Deploy logging
+ openshift_hosted_logging_deploy=true
+# openshift_hosted_logging_storage_kind=dynamic
+#Metric
+openshift_metrics_install_metrics=true
+openshift_metrics_hawkular_hostname=hawkular-metrics.sun.com
+openshift_metrics_project=openshift-infra
+openshift_metrics_image_version=v3.6.0
+openshift_metrics_cassandra_storage_type=emptydir
+
+
+
+# uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+openshift_master_default_subdomain=cloudapps.sun.com
+
+# allow unencrypted connection within cluster
+openshift_docker_insecure_registries=172.30.0.0/16
+
+containerized=true
+
+
+# host group for masters
+[masters]
+master01.sun.com openshift_public_hostname=35.231.212.65 openshift_ip=10.142.0.4 openshift_public_ip=35.231.212.65
+
+# host group for etcd
+[etcd]
+master01.sun.com
+
+# host group for nodes, includes region info
+[nodes]
+master01.sun.com
+node01.sun.com   openshift_node_labels="{'region': 'primary', 'zone': 'east'}"
+node02.sun.com   openshift_node_labels="{'region': 'primary', 'zone': 'west'}"
+infra01.sun.com  openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
